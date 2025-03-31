@@ -9,8 +9,7 @@ def get_subtitle_for_date(day, month, year):
 
     
 
-    print(f'https://www.zdf.de/nachrichten/heute-journal/heute-journal-vom-{day:02d}-{months[month-1]}-20{year}-100.html')
-    heute_seite_html = requests.get(f'https://www.zdf.de/nachrichten/heute-journal/heute-journal-vom-{day:02d}-{months[month-1]}-20{year}-100.html', headers= {
+    heute_seite_html = requests.get(f'https://www.zdf.de/nachrichten/heute-journal/heute-journal-vom-{day}-{months[month-1]}-20{year}-100.html', headers= {
                 "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/136.0",
                 "Accept": "application/vnd.de.zdf.v1.0+json",
                 "Accept-Language": "en-US,en;q=0.5",
@@ -20,14 +19,10 @@ def get_subtitle_for_date(day, month, year):
                 "Sec-Fetch-Site": "same-site",
                 "Priority": "u=4"
             })
-    print(heute_seite_html)
     regex_string = f"{year}-{month:02d}-{day:02d}T[0-2][0-9]:[0-5][0-9]"
-    print(regex_string)
     date_string_list = re.findall(regex_string, heute_seite_html.text)
     air_time = date_string_list[0].split("T")[1]
-    print(air_time)
     date_api_string = f"{year}{month:02d}{day:02d}_{air_time.replace(":","")}"
-    print(date_api_string)
     x = "not found"
     i = 1
     while "not found" in x:
@@ -51,10 +46,16 @@ def get_subtitle_for_date(day, month, year):
     print(xml_url)
 
 def main():
-    day = 27
+    day = 2
     month = 8
     year = 24
-    get_subtitle_for_date(day, month, year)
+    i = 1
+    while i <= 12:
+        try: 
+            get_subtitle_for_date(day, i, year)
+        except:
+            print("not found")
+        i += 1
 
 if __name__ == '__main__':
     main()
