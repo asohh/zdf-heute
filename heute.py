@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 import requests
@@ -44,18 +45,38 @@ def get_subtitle_for_date(day, month, year):
         if caption["format"] == "ebu-tt-d-basic-de":
             xml_url = caption["uri"]
     print(xml_url)
+    return xml_url
 
 def main():
-    day = 2
-    month = 8
-    year = 24
-    i = 1
-    while i <= 12:
-        try: 
-            get_subtitle_for_date(day, i, year)
-        except:
-            print("not found")
-        i += 1
+
+    x = datetime.datetime.now()
+    for year in range(24,x.year+1):
+        for month in range(1,13):
+            for day in range(1,32):
+                try:
+                    url = get_subtitle_for_date(day, month, year)
+                    download_file(url, f"./downloads/{year}{month:02d}{day:02d}.xml")
+                except:
+                    print("not found")
+                print(f"{day}.{month}.{year}")
+                if x.month == month and x.day == day and x.year == year+2000:
+                    exit(0)
+
+def download_file(url, path):
+    page = requests.get(url, headers= {
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/136.0",
+                "Accept": "application/vnd.de.zdf.v1.0+json",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Api-Auth": "Bearer aa3noh4ohz9eeboo8shiesheec9ciequ9Quah7el",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-site",
+                "Priority": "u=4"
+            })
+
+    with open(path, "w") as output:
+        output.write(page.text)
+
 
 if __name__ == '__main__':
     main()
