@@ -76,7 +76,7 @@ def get_subtitle_for_date(day, month, year):
 
 
 def get_proxy_list():
-    list_request = requests.get("https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&country=de&proxy_format=protocolipport&format=json&anonymity=Elite&timeout=20000", headers= {
+    list_request = requests.get("https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&protocol=http&proxy_format=protocolipport&format=json&anonymity=Elite&timeout=100", headers= {
                 "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/136.0",
                 "Accept": "application/vnd.de.zdf.v1.0+json",
                 "Accept-Language": "en-US,en;q=0.5",
@@ -86,11 +86,30 @@ def get_proxy_list():
                 "Sec-Fetch-Site": "same-site",
                 "Priority": "u=4"
             })
+    print(list_request.text)
     proxy_request_json = json.loads(list_request.text)
     proxy_list = []
     for proxy in proxy_request_json["proxies"]:
-        if proxy["protocol"] == "http":
+        try:
+            proxies = { 
+                        "https" : proxy["proxy"]
+                        }
+            url = "https://google.com"
+            requests.get(url, headers= {
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0",
+                "Accept": "application/vnd.de.zdf.v1.0+json",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Api-Auth": "Bearer aa3noh4ohz9eeboo8shiesheec9ciequ9Quah7el",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-site",
+                "Priority": "u=4"
+            }, proxies = proxies
+            )
             proxy_list.append(proxy["proxy"])
+        except:
+            pass
+    print(len(proxy_list))
     return proxy_list
 
 def download_starting_from_until(start_date, end_date, proxy_list = None):
@@ -111,9 +130,25 @@ def download_starting_from_until(start_date, end_date, proxy_list = None):
 
 def main():
     # start_date = datetime.datetime(year, month, day)
-    start_date = datetime.datetime.now() - datetime.timedelta(days=4)
+    #proxy_list = get_proxy_list()
+    
+    proxy_list = ["http://localhost:8118"]
+    proxies = { 
+                        "https" : "http://localhost:8118"
+                        }
+    url = "https://check.torproject.org/api/ip"
+    try:
+        test = requests.get(url, proxies = proxies)
+        response = json.loads(test.text)
+        if response["IsTor"]:
+            print("Connected to the tor network")
+        else:
+            exit(1)
+    except:
+        exit(1)
+    start_date = datetime.datetime.now() - datetime.timedelta(days=20)
     end_date = datetime.datetime.now() - datetime.timedelta(days=1)
-    download_starting_from_until(start_date, end_date)
+    download_starting_from_until(start_date, end_date, proxy_list)
 
     
 
